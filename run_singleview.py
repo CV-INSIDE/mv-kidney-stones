@@ -196,7 +196,8 @@ def main(config):
                                    train_batch_size=16,
                                    train_transformations=image_transforms["train"],
                                    test_transformations=image_transforms["test"],
-                                   seed=config['manualSeed'])
+                                   seed=config['manualSeed'],
+                                   color_transform=True)
     pl.seed_everything(config['manualSeed'])
 
     trainer = pl.Trainer(gpus=None,

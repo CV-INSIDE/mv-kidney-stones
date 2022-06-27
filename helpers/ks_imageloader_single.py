@@ -24,7 +24,8 @@ class KidneyImagesLoader(pl.LightningDataModule):
                  train_batch_size=1,
                  train_transformations=[],
                  test_transformations=[],
-                 seed=None):
+                 seed=None,
+                 color_transform=False):
         super().__init__()
         self.num_workers = 0
         if seed != None:
@@ -46,7 +47,7 @@ class KidneyImagesLoader(pl.LightningDataModule):
         self.train_batch_size = train_batch_size
         self.train_transformations = train_transformations
         self.test_transformations = test_transformations
-        self.color_transform = True
+        self.color_transform = color_transform
 
     """
     Returns the classes found.
@@ -63,6 +64,7 @@ class KidneyImagesLoader(pl.LightningDataModule):
         if not apply_color:
             dataset = datasets.ImageFolder(root=self.image_path + "/train", transform=self.train_transformations)
         else:
+            print("Using color transformation dataset")
             dataset = ColorDataSet(get_content_of_folder(os.path.join(self.image_path, 'train')),
                                    transform=self.train_transformations,
                                    hsv=True,
