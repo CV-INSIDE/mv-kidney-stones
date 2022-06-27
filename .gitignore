@@ -3,3 +3,6 @@
 
 lightning_logs/
 ./lighting_logs
+
+*/__pycache__
+__pycache__/
