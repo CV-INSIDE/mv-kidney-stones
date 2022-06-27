@@ -200,6 +200,7 @@ def main(config):
                                    color_transform=True)
     pl.seed_everything(config['manualSeed'])
 
+    # Class
     trainer = pl.Trainer(gpus=None,
                          max_epochs=config['max_exec_epochs'],
                          min_epochs=config['min_exec_epochs'],
