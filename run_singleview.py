@@ -1,18 +1,28 @@
 import os
-import argparse
 import yaml
+import torch
+import random
+import logging
+import argparse
 
 import numpy as np
-import torch
-from torchvision import transforms
-import random
+from datetime import datetime
 import pytorch_lightning as pl
-from collections import OrderedDict
-
-from pytorch_lightning.callbacks import EarlyStopping
-
 import helpers.ks_imageloader_single as kl
 
+from torchvision import transforms
+from collections import OrderedDict
+from pytorch_lightning.callbacks import EarlyStopping
+
+# logging details
+now =datetime.now()
+current_time =now.strftime("%H%M%S")
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+handler = logging.FileHandler(f"single_view_{current_time}.log")
+handler.setLevel(logging.INFO)
+logger.addHandler(handler)
+# logging.basicConfig(filename=f"single_view_{current_time}.log", format='%(asctime)s - %(message)s', level=logging.INFO)
 
 def main(config):
     """
@@ -41,21 +51,25 @@ def main(config):
 
     # Single View
     if config['model_to_use'] == "alexnet":
+        logging.info("Using alexnet model")
         from models.alexnet import AlexnetModel
         model = AlexnetModel(hparams={"lr": 0.0002}, num_classes=config['num_classes'],
                              pretrained=True, seed=config['manualSeed'])
         img_size = 227
     elif config['model_to_use'] == "inception":
+        logging.info("using inception model")
         from models.inception import InceptionModel
         model = InceptionModel(hparams={"lr": 0.0002}, num_classes=config['num_classes'],
                                pretrained=True, seed=config['manualSeed'])
         img_size = 224
     elif config['model_to_use'] == "vgg16":
+        logging.info("using vgg16 model")
         from models.vgg16 import Vgg16Model
         model = Vgg16Model(hparams={"lr": 0.00005}, num_classes=config['num_classes'],
                            pretrained=True, seed=config['manualSeed'])
         img_size = 224
     elif config['model_to_use'] == "vgg19":
+        logging.info("using vgg19 model")
         from models.vgg19 import Vgg19Model
         model = Vgg19Model(hparams={"lr": 0.00005}, num_classes=config['num_classes'],
                            pretrained=True, seed=config['manualSeed'])
@@ -63,6 +77,7 @@ def main(config):
 
     # multi view
     elif config['model_to_use'] == "alexnet_mv_max":
+        logging.info("using multiview alexnet max model")
         from models.multiview import MultiViewMaxPool
         model = MultiViewMaxPool(hparams={"lr": 0.0002}, num_classes=config['num_classes'],
                                  pretrained=True, seed=config['manualSeed'])
@@ -72,7 +87,8 @@ def main(config):
         test = OrderedDict({k: v for k, v in checkpoint['state_dict'].items() if 'classifier' not in k})
         model.load_state_dict(test, strict=False)
         img_size = 227
-    elif config['model_to_use'] == "vgg16_mx_max":
+    elif config['model_to_use'] == "vgg16_mv_max":
+        logging.info("using multiview vgg16 max model")
         from models.multiview import MultiViewPoolVGG16
         model = MultiViewPoolVGG16(hparams={"lr": 0.00005}, num_classes=config['num_classes'], pretrained=True,
                                    seed=config['manualSeed'])
@@ -82,6 +98,7 @@ def main(config):
         model.load_state_dict(test, strict=False)
         img_size = 227
     elif config['model_to_use'] == "inception_mv_max":
+        logging.info("using multi view inception max model")
         from models.inception import InceptionModeMulti
         model = InceptionModeMulti(hparams={"lr": 0.0002}, num_classes=config['num_classes'], pretrained=True,
                                    seed=config['manualSeed'])
@@ -187,6 +204,8 @@ def main(config):
     print("MEAN => ", mean)
     print("IMAGE TRANSFORMATIONS => ", image_transforms)
 
+    logging.info(f"transformations: {image_transforms}")
+
     # Variable that holds the route to the image zip files. Change this value if
     # you wish to run the test on a different set of images. IMPORTANT: The zip file
     # must contain images ordered in the same structure ("train" and "test" folders).
@@ -201,6 +220,8 @@ def main(config):
     pl.seed_everything(config['manualSeed'])
 
     # Class
+    logging.info(f"min epochs: {config['min_exec_epochs']}")
+    logging.info(f"max epochs: {config['max_exec_epochs']}")
     trainer = pl.Trainer(gpus=None,
                          max_epochs=config['max_exec_epochs'],
                          min_epochs=config['min_exec_epochs'],
@@ -214,6 +235,7 @@ def main(config):
 
     print('### Model: ###')
     print(model)
+    logging.info(f"model: {model}")
 
     trainer.fit(model, loader)
     # trainer.save_checkpoint(f"saves/{config['model_name']}.ckpt")

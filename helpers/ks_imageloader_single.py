@@ -67,7 +67,7 @@ class KidneyImagesLoader(pl.LightningDataModule):
             print("Using color transformation dataset")
             dataset = ColorDataSet(get_content_of_folder(os.path.join(self.image_path, 'train')),
                                    transform=self.train_transformations,
-                                   hsv=True,
+                                   hsv=False,
                                    lbp=False,
                                    train=True)
         idx2class = {v: k for k, v in dataset.class_to_idx.items()}
@@ -102,7 +102,7 @@ class KidneyImagesLoader(pl.LightningDataModule):
         else:
             dataset_test = ColorDataSet(get_content_of_folder(os.path.join(self.image_path, 'test')),
                                         transform=self.test_transformations,
-                                        hsv=True,
+                                        hsv=False,
                                         lbp=False,
                                         train=False)
         return dataset_test

@@ -2,6 +2,7 @@ import pytorch_lightning as pl
 from pytorch_lightning.loggers import TensorBoardLogger
 # from pytorch_lightning.metrics.functional import accuracy
 from pytorch_lightning.callbacks import EarlyStopping
+import logging
 import torch
 from sklearn.metrics import classification_report, confusion_matrix
 import pandas as pd
@@ -9,6 +10,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 import random
+
+log = logging.getLogger(__name__)
 
 
 class BaseModel(pl.LightningModule):
@@ -119,6 +122,8 @@ class BaseModel(pl.LightningModule):
             cf = classification_report(real, pred)
 
         print(cf)
+        log.info("Confusion matrix in testing:")
+        log.info(cf)
 
         cm = confusion_matrix(real, pred)
         cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]

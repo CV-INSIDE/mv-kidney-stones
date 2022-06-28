@@ -108,6 +108,6 @@ class ColorDataSet(Dataset):
 
 # test = r'C:\Users\15B38LA\Downloads\mixed\test'
 # data = get_content_of_folder(test)
-# ewe = ColorDataSet(data, hsv=True, lbp=True, train=False)
+# ewe = ColorDataSet(data, hsv=True, lbp=True, train=True, select_color=['hsv'])
 # for item in range(len(ewe)):
-#     a = ewe[item]
+#      a = ewe[item]
