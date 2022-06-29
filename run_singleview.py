@@ -216,7 +216,9 @@ def main(config):
                                    train_transformations=image_transforms["train"],
                                    test_transformations=image_transforms["test"],
                                    seed=config['manualSeed'],
-                                   color_transform=True)
+                                   color_transform=config['color_transform'][0],
+                                   hsv=config['color_transform'][1],
+                                   lbp=config['color_transform'][2])
     pl.seed_everything(config['manualSeed'])
 
     # Class
@@ -238,8 +240,9 @@ def main(config):
     logging.info(f"model: {model}")
 
     trainer.fit(model, loader)
-    # trainer.save_checkpoint(f"saves/{config['model_name']}.ckpt")
     trainer.test(model, datamodule=loader)
+    if config['save_model']:
+        trainer.save_checkpoint(f"saves/{config['model_name']}.ckpt")
 
 
 if __name__ == '__main__':

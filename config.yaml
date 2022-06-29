@@ -2,7 +2,6 @@ model_name: alexnet_hsv
 model_to_use: alexnet
 
 image_path: C:\Users\15B38LA\Downloads\section_w256
-image_path_view2: C:\Users\15B38LA\Downloads\mixed
 num_classes:  6
 
 min_exec_epochs: 1
@@ -14,3 +13,7 @@ are_images_gray: "no"
 
 manualSeed: 0
 use_augmentation: True
+save_model: True
+
+# 1 - Use color transform; 2. Use HSV transform, 3. Use LBP transform
+color_transform: [True, True, True]

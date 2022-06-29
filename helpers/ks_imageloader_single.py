@@ -1,12 +1,16 @@
-import pytorch_lightning as pl
-from torch.utils.data import DataLoader, SubsetRandomSampler
-import numpy as np
 import os
-from torchvision import datasets
 import random
+import logging
+import numpy as np
+import pytorch_lightning as pl
+
+from torchvision import datasets
+from torch.utils.data import DataLoader, SubsetRandomSampler
 
 from helpers.data_loader import ColorDataSet
 from helpers.data_separator import get_content_of_folder
+
+log = logging.getLogger(__name__)
 
 
 class KidneyImagesLoader(pl.LightningDataModule):
@@ -25,7 +29,9 @@ class KidneyImagesLoader(pl.LightningDataModule):
                  train_transformations=[],
                  test_transformations=[],
                  seed=None,
-                 color_transform=False):
+                 color_transform=False,
+                 hsv=False,
+                 lbp=False):
         super().__init__()
         self.num_workers = 0
         if seed != None:
@@ -47,40 +53,44 @@ class KidneyImagesLoader(pl.LightningDataModule):
         self.train_batch_size = train_batch_size
         self.train_transformations = train_transformations
         self.test_transformations = test_transformations
-        self.color_transform = color_transform
 
-    """
-    Returns the classes found.
-    """
+        # Custom, augment data by adding hsv and lbp image transformations
+        self.color_transform = color_transform
+        self.hsv = hsv
+        self.lbp = lbp
 
     def get_class_indices(self):
+        """
+        Returns the classes found.
+        """
         return self.idx2class
 
-    """
-    Returns the training dataset and the mapping for index to class name.
-    """
-
     def get_train_dataset(self, apply_color=False):
+        """
+        Returns the training dataset and the mapping for index to class name.
+        """
         if not apply_color:
             dataset = datasets.ImageFolder(root=self.image_path + "/train", transform=self.train_transformations)
         else:
             print("Using color transformation dataset")
+            log.info("Using color transformation dataset")
+            log.info(f"hsv transform {self.hsv}, lbp transform {self.lbp}")
             dataset = ColorDataSet(get_content_of_folder(os.path.join(self.image_path, 'train')),
                                    transform=self.train_transformations,
-                                   hsv=False,
-                                   lbp=False,
+                                   hsv=self.hsv,
+                                   lbp=self.lbp,
                                    train=True)
+        log.info(f"length of dataset {len(dataset)}")
         idx2class = {v: k for k, v in dataset.class_to_idx.items()}
         self.idx2class = idx2class
         self.train_dataset = dataset
         return dataset, idx2class
 
-    """
-    Splits the training set into train and validation sets and it returns the
-    generated SubsetRandomSamplers.
-    """
-
     def _train_val_samplers(self):
+        """
+        Splits the training set into train and validation sets and it returns the
+        generated SubsetRandomSamplers.
+        """
         rps_dataset_size = len(self.train_dataset)
         rps_dataset_indices = list(range(rps_dataset_size))
         np.random.shuffle(rps_dataset_indices)
@@ -91,15 +101,17 @@ class KidneyImagesLoader(pl.LightningDataModule):
         self.train_sampler = SubsetRandomSampler(train_idx)
         self.val_sampler = SubsetRandomSampler(val_idx)
 
-    """
-    Returns the test dataset.
-    """
+        log.info(f"train batch size: {train_idx}, val batch size: {val_idx}")
 
     def get_test_dataset(self, apply_color=False):
+        """
+        Returns the test dataset.
+        """
         if not apply_color:
             dataset_test = datasets.ImageFolder(root=self.image_path + "/test",
                                                 transform=self.test_transformations)
         else:
+            log.info("Using color dataset for testing")
             dataset_test = ColorDataSet(get_content_of_folder(os.path.join(self.image_path, 'test')),
                                         transform=self.test_transformations,
                                         hsv=False,
@@ -107,11 +119,10 @@ class KidneyImagesLoader(pl.LightningDataModule):
                                         train=False)
         return dataset_test
 
-    """
-    Executed automatically by lightning when a dataloader is requested.
-    """
-
     def setup(self, stage=None):
+        """
+        Executed automatically by lightning when a dataloader is requested.
+        """
         if hasattr(self, 'zip_path'):
             cmd = 'yes | cp "' + self.zip_path + '" -d "/content/"'
             os.system(cmd)
@@ -120,26 +131,24 @@ class KidneyImagesLoader(pl.LightningDataModule):
         self.get_train_dataset(apply_color=self.color_transform)
         self._train_val_samplers()
 
-    """
-    Returns the train data loader.
-    """
-
     def train_dataloader(self):
+        """
+        Returns the train data loader.
+        """
         return DataLoader(dataset=self.train_dataset, shuffle=False, batch_size=self.train_batch_size,
                           sampler=self.train_sampler, num_workers=self.num_workers)
 
-    """
-    Returns the validation data loader.
-    """
-
     def val_dataloader(self):
+        """
+        Returns the validation data loader.
+        """
         return DataLoader(dataset=self.train_dataset, shuffle=False, batch_size=1, sampler=self.val_sampler,
                           num_workers=self.num_workers)
 
-    """
-    Returns the test data loader.
-    """
-
     def test_dataloader(self):
+        """
+        Returns the test data loader.
+        """
         dataset = self.get_test_dataset(self.color_transform)
+        print(f"length of dataset {len(dataset)}")
         return DataLoader(dataset=dataset, shuffle=False, batch_size=1, num_workers=self.num_workers)
