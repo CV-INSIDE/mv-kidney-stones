@@ -261,5 +261,3 @@ class MultiViewPoolVGG16(tlm.BaseModel):
         xy = self.vgg16.classifier(xy)
 
         return xy
-
-

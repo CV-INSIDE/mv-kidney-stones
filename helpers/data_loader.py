@@ -7,14 +7,15 @@ import numpy as np
 import torch
 import pandas as pd
 
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
 from skimage import io
 from PIL import Image
 
 import helpers.transformations as transformations
-# from helpers.data_separator import get_content_of_folder
+from helpers.data_separator import get_content_of_folder
 
 # import matplotlib.pyplot as plt
+from torchvision import transforms
 
 
 class ColorDataSet(Dataset):
@@ -94,19 +95,33 @@ class ColorDataSet(Dataset):
 
         if self.data.iloc[idx, 2] == 'hsv':
             image = transformations.transform_hsv(image)
+            # image = transformations.get_energy(image)
             mode = 'HSV'
 
         elif self.data.iloc[idx, 2] == 'lbp':
             image, _ = transformations.transform_lbp(image)
-            image = np.stack([image, image, image])
-            image = np.moveaxis(image, 0, -1)
+            image = np.stack([image, image, image], axis=2)
 
-        image = Image.fromarray(image, mode=mode)
+        """
+        fig, (ax1, ax2) = plt.subplots(ncols=2, figsize=(8, 2))
+        # image = Image.fromarray(image, mode=mode)
+        im1 = ax1.imshow(image[:, :, 0], cmap='hsv', vmin=0, vmax=1)
+        ax1.set_title('hue')
+        fig.colorbar(im1, ax=ax1)
+        """
+
         if self.transform:
             image = self.transform(image)
 
+        """
+        image = image.numpy()
+        im2 = ax2.imshow(image[0, :, :], cmap='hsv', vmin=0, vmax=1)
+        ax2.set_title('after transform')
+        fig.colorbar(im2, ax=ax2)
+        plt.show()
+        """
         # sample = {'image': image,  'label': self.data.iloc[idx, 1]}
-        return image, self.class_to_idx[self.data.iloc[idx, 1]]
+        return image.float(), self.class_to_idx[self.data.iloc[idx, 1]]
 
 
 class ColorDataSetMV(ColorDataSet):
@@ -128,12 +143,11 @@ class ColorDataSetMV(ColorDataSet):
 
         # get image in hsv
         image_2 = transformations.transform_hsv(image_1)
+        # image_2 = transformations.get_energy(image_1)
 
         # get image in lbp
         image_3, _ = transformations.transform_lbp(image_1)
-        image_3 = np.stack([image_3, image_3, image_3])
-        image_3 = np.moveaxis(image_3, 0, -1)
-
+        image_3 = np.stack([image_3, image_3, image_3], axis = 2)
         # plt.figure()
         # plt.subplot(1,3,1)
         # plt.imshow(image_1)
@@ -143,9 +157,9 @@ class ColorDataSetMV(ColorDataSet):
         # plt.imshow(image_3)
 
         # transform images into PIL format
-        image_1 = Image.fromarray(image_1, mode='RGB')
-        image_2 = Image.fromarray(image_2, mode='HSV')
-        image_3 = Image.fromarray(image_3, mode='RGB')
+        # image_1 = Image.fromarray(image_1, mode='RGB')
+        # image_2 = Image.fromarray(image_2, mode='HSV')
+        # image_3 = Image.fromarray(image_3, mode='RGB')
 
         if self.transform:
             image_1 = self.transform(image_1)
@@ -155,9 +169,47 @@ class ColorDataSetMV(ColorDataSet):
         return (image_1, image_2, image_3), self.class_to_idx[self.data.iloc[idx, 1]]
 
 
-# test = r'C:\Users\15B38LA\Downloads\mixed\test'
-# data = get_content_of_folder(test)
-# ewe = ColorDataSet(data, hsv=True, lbp=True, train=True, select_color=['hsv'])
-# ewe = ColorDataSetMV(data)
-# for item in range(len(ewe)):
-#     a, b = ewe[item]
+def batch_mean_and_sd(loader):
+    """
+    Used to compute mean and standard deviation
+    """
+    cnt = 0
+    fst_moment = torch.empty(3)
+    snd_moment = torch.empty(3)
+
+    for images, _ in loader:
+        b, c, h, w = images.shape
+        nb_pixels = b * h * w
+        sum_ = torch.sum(images, dim=[0, 2, 3])
+        sum_of_square = torch.sum(images ** 2,
+                                  dim=[0, 2, 3])
+        fst_moment = (cnt * fst_moment + sum_) / (cnt + nb_pixels)
+        snd_moment = (cnt * snd_moment + sum_of_square) / (cnt + nb_pixels)
+        cnt += nb_pixels
+
+    mean, std = fst_moment, torch.sqrt(snd_moment - fst_moment ** 2)
+    return mean, std
+
+
+if __name__ == '__main__':
+    """
+    If executed as main, this program will return the standard
+    deviation and mean of every channel.
+    """
+    transform_img = transforms.Compose([
+        transforms.ToTensor(),
+    ])
+
+    test = r'C:\Users\15B38LA\Downloads\surface_w256\train'
+    #from skimage import data
+    #img = data.astronaut()
+    #test2 = transformations.get_energy(img)
+    content = get_content_of_folder(test)
+    ewe = ColorDataSet(content, hsv=True, lbp=True, train=True, transform=transform_img, select_color=['lbp'])
+    # ewe = ColorDataSetMV(data)
+    for item in range(len(ewe)):
+         a, b = ewe[item]
+    # compute standard deviation and mean
+    test_loader = DataLoader(ewe, batch_size=10, num_workers=0)
+    mean, std = batch_mean_and_sd(test_loader)
+    print(f"mean: {mean}, std: {std}")

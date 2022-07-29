@@ -68,7 +68,6 @@ class AlexnetMax(tlm.BaseModel):
         xyz = torch.stack([x, y, z])
         xyz = reduce(xyz, 'c b l -> 1 b l', 'max')
         xyz = torch.squeeze(xyz, dim=0)
-        # xy = reduce(xy, 'c l -> 1 l', 'max')
         xyz = self.alex.classifier(xyz)
 
         return xyz

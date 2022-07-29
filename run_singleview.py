@@ -115,7 +115,7 @@ def main(config):
 
     # Transformations
     random_transforms = 1
-    train_transformations = []
+    train_transformations = [transforms.ToTensor()]
     train_transformations += [transforms.RandomChoice([
         transforms.RandomHorizontalFlip(p=0.5),
         transforms.RandomVerticalFlip(p=0.5),
@@ -126,8 +126,8 @@ def main(config):
         transforms.RandomRotation(degrees=(-180, 180)),
     ]) for _ in range(random_transforms)]
     train_transformations += [transforms.Resize((img_size, img_size)),
-                              transforms.ToTensor(),
-                              transforms.Normalize(mean, std)]
+                              ]
+                              #transforms.Normalize(mean, std)]
     """
     transforms.RandomChoice([
         transforms.RandomHorizontalFlip(p=0.5),
@@ -144,9 +144,9 @@ def main(config):
     ]
     """
     test_transformations = [
-        transforms.Resize((img_size, img_size)),
         transforms.ToTensor(),
-        transforms.Normalize(mean, std)
+        transforms.Resize((img_size, img_size)),
+        #transforms.Normalize(mean, std)
     ]
 
     if config['are_images_gray'] == "yes":

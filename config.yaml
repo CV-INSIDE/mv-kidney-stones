@@ -4,11 +4,16 @@ model_to_use: alexnet
 image_path: C:\Users\15B38LA\Downloads\section_w256
 num_classes:  6
 
-min_exec_epochs: 1
-max_exec_epochs: 1
+min_exec_epochs: 4
+max_exec_epochs: 4
 
-image_mean: "0.659, 0.587, 0.482"
-image_std:  "0.1303, 0.132, 0.133"
+
+#image_mean: "0.659, 0.587, 0.482"
+#image_std:  "0.1303, 0.132, 0.133"
+
+# All three images
+image_mean: "0.3954, 0.3830, 0.3423"
+image_std: "0.3337, 0.3253, 0.3015"
 are_images_gray: "no"
 
 manualSeed: 0
@@ -16,4 +21,4 @@ use_augmentation: True
 save_model: True
 
 # 1 - Use color transform; 2. Use HSV transform, 3. Use LBP transform
-color_transform: [True, True, True]
+color_transform: [True, True, False]

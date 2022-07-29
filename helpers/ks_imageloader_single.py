@@ -79,7 +79,8 @@ class KidneyImagesLoader(pl.LightningDataModule):
                                    transform=self.train_transformations,
                                    hsv=self.hsv,
                                    lbp=self.lbp,
-                                   train=True)
+                                   train=True,
+                                   select_color=['rgb'])
         log.info(f"length of dataset {len(dataset)}")
         idx2class = {v: k for k, v in dataset.class_to_idx.items()}
         self.idx2class = idx2class
@@ -114,9 +115,10 @@ class KidneyImagesLoader(pl.LightningDataModule):
             log.info("Using color dataset for testing")
             dataset_test = ColorDataSet(get_content_of_folder(os.path.join(self.image_path, 'test')),
                                         transform=self.test_transformations,
-                                        hsv=False,
-                                        lbp=False,
-                                        train=False)
+                                        hsv=self.hsv,
+                                        lbp=self.lbp,
+                                        train=True,
+                                        select_color=['rgb'])
         return dataset_test
 
     def setup(self, stage=None):
@@ -150,5 +152,5 @@ class KidneyImagesLoader(pl.LightningDataModule):
         Returns the test data loader.
         """
         dataset = self.get_test_dataset(self.color_transform)
-        print(f"length of dataset {len(dataset)}")
+        print(f"length of test dataset {len(dataset)}")
         return DataLoader(dataset=dataset, shuffle=False, batch_size=1, num_workers=self.num_workers)
