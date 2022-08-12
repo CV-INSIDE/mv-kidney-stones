@@ -158,7 +158,6 @@ class ResNet(nn.Module):
                 self.state_dict()[key][...] = 0
 
     def _make_layer(self, block, planes, blocks, stride=1, att_type=None):
-        # a
         downsample = None
         norm_layer = self._norm_layer
 
