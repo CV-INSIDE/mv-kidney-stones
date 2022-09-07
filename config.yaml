@@ -1,11 +1,11 @@
 model_name: alexnet_hsv
-model_to_use: alexnet
+model_to_use: resnet50
 
 image_path: C:\Users\15B38LA\Downloads\section_w256
-num_classes:  6
+num_classes:  10
 
-min_exec_epochs: 4
-max_exec_epochs: 4
+min_exec_epochs: 31
+max_exec_epochs: 31
 
 
 #image_mean: "0.659, 0.587, 0.482"

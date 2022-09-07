@@ -168,6 +168,37 @@ class ColorDataSetMV(ColorDataSet):
 
         return (image_1, image_2, image_3), self.class_to_idx[self.data.iloc[idx, 1]]
 
+class ISICDataset(Dataset):
+    """
+    DataLoader used for ISIC data
+    """
+    def __init__(self, data, label, transform=None, mode='train'):
+        self.data = data
+        self.transform = transform
+        self.label = label
+        self.mode = mode
+        self.class_to_idx = {'False': 0,
+                             'True': 1
+                             }
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        if torch.is_tensor(idx):
+            idx = idx.tolist()
+
+        image_name = os.path.abspath(self.data[idx])
+        image = io.imread(image_name)
+
+        if self.transform:
+            image = self.transform(image)
+
+        label = torch.tensor(self.label[idx])
+
+        return image, label
+
+
 
 def batch_mean_and_sd(loader):
     """
@@ -189,7 +220,6 @@ def batch_mean_and_sd(loader):
 
     mean, std = fst_moment, torch.sqrt(snd_moment - fst_moment ** 2)
     return mean, std
-
 
 if __name__ == '__main__':
     """

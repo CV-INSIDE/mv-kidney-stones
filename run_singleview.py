@@ -56,6 +56,12 @@ def main(config):
         model = AlexnetModel(hparams={"lr": 0.0002}, num_classes=config['num_classes'],
                              pretrained=True, seed=config['manualSeed'])
         img_size = 227
+    elif config['model_to_use'] == "resnet50":
+        logging.info("Using resnet50 model")
+        from models.attention.models.resnet import ResNet50Cbam
+        model = ResNet50Cbam(hparams={"lr": 0.0002}, num_classes=config['num_classes'],
+                             seed=config['manualSeed'])
+        img_size = 224
     elif config['model_to_use'] == "inception":
         logging.info("using inception model")
         from models.inception import InceptionModel

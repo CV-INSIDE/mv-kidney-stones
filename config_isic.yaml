@@ -1,0 +1,22 @@
+model_name: alexnet_hsv
+model_to_use: resnet50
+
+image_path: C:\Users\15B38LA\Downloads\ISIC_2020\512x512-dataset-melanoma\512x512-dataset-melanoma
+src_path: C:\Users\15B38LA\Downloads\ISIC_2020\marking.csv
+num_classes:  2
+
+min_exec_epochs: 31
+max_exec_epochs: 31
+
+
+#image_mean: "0.659, 0.587, 0.482"
+#image_std:  "0.1303, 0.132, 0.133"
+
+# All three images
+image_mean: "0.485, 0.456, 0.406"
+image_std: "0.229, 0.224, 0.225"
+are_images_gray: "no"
+
+manualSeed: 0
+use_augmentation: True
+save_model: True
