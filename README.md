@@ -1,6 +1,7 @@
 # Improved Kidney Stone Recognition Through Attention and Multi-View Feature Fusion Strategies
 
 
+
 This repository has the code to implement the methods described in the conference article: [*Improved Kidney Stone Recognition Through Attention and Multi-View Feature Fusion Strategies*](https://arxiv.org/pdf/2211.02967.pdf), developed as part of the project [*"RECONDITE: Deep learning and image analysis methods for improving the endoscopic identification of kidney stones composition"*](https://www.researchgate.net/project/RECONDITE-Deep-learning-and-image-analysis-methods-for-improving-the-endoscopic-identification-of-kidney-stones-composition) at [Tecnologico de Monterrey](https://tec.mx/en) and [Université de Lorraine](http://www.univ-lorraine.fr). 
 
 
